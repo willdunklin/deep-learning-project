@@ -64,7 +64,10 @@ model2.add(Dense(1024, activation="relu"))
 model2.add(Dense(1, activation="relu"))
 model2.compile(optimizer="adam", loss="MSE", metrics=["accuracy"])
 
-# Training the model
-model2.fit([x_train], y_train, epochs=1, batch_size=1 ,verbose=1, validation_split=.2)
+try:
+    # Training the model
+    model2.fit([x_train], y_train, epochs=5, batch_size=2 ,verbose=1, validation_split=.2)
 
-model2.save("models")
+    model2.save("models")
+except KeyboardInterrupt:
+    model2.save("models")
