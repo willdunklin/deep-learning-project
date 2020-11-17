@@ -1,12 +1,27 @@
 from tensorflow import keras
 from keras.layers import Dense, Conv3D, MaxPool3D, Dropout, Flatten
 from keras.models import Sequential
+from keras.callbacks import CSVLogger
 from sklearn.model_selection import train_test_split
 from PIL import Image
 from numpy import asarray
 import os
 
+# set to true and specify model version number if you want to load a model
+loadModel = False
+modelNum = 4
 
+# read model version from txt file
+if not loadModel:
+    with open('modelVersion.txt') as f:
+        modelNum = f.read()
+        f.close()
+
+# iterate model number
+if not loadModel:
+    modelNum = str(int(modelNum) + 1)
+
+print("Model version: ", modelNum)
 
 # Data prep
 
@@ -23,7 +38,7 @@ with open("train.txt") as f:
 
 
 data = []
-folder = "Images_2"
+folder = "frames"
 for picture in os.listdir(folder): # Some_images only contains 64 images, for testing
     data.append(asarray(Image.open(folder + "/" + picture)))
 
@@ -35,15 +50,15 @@ for i in range(len(data) - window_size): # Looping through all but the last wind
 labels = asarray(labels[window_size:])
 print(len(combined_data), len(labels))
 # Split the data
-x_train, x_valid, y_train, y_valid = train_test_split(combined_data, labels, test_size=0.2, shuffle= False)
-print(len(x_train), len(y_train))
+x_train, x_test, y_train, y_test = train_test_split(combined_data, labels, test_size=0.2, shuffle=False)
+
 try:
-    if "model.keras" in os.listdir(os.getcwd()):
-        # Load from a saved state
-        model2 = keras.models.load_model("model.keras")
+    if loadModel and "model" + modelNum + ".keras" in os.listdir(os.getcwd()):
+        #Load from a saved state
+        model = keras.models.load_model("model" + modelNum + ".keras")
     else:
         # Defining the model
-        start_filter = 16
+        start_filter = 64
         INPUT_SHAPE = (window_size, 120, 160, 3)
         model2 = Sequential()
         model2.add(Conv3D(start_filter, (3, 3, 3), padding="same", input_shape=INPUT_SHAPE))
@@ -65,8 +80,19 @@ try:
         model2.compile(optimizer="adam", loss="MAE", metrics=["mae", "mse", "mape"])
 
     # Training the model
-    model2.fit([x_train], y_train, epochs=5, batch_size=1, verbose=1, validation_split=.2)
+    model.fit(asarray(x_train), asarray(y_train), epochs=5, batch_size=1, verbose=1, validation_split=.2, shuffle=True, callbacks=[csv_logger])
 
-    model2.save("model.keras")
+    model.save("model" + modelNum + ".keras")
+
+    # write new model number to file
+    if not loadModel:
+        with open('modelVersion.txt', 'w') as f:
+            f.write(modelNum)
+            f.close()
+
 except KeyboardInterrupt:
-    model2.save("model.keras")
+    model.save("model" + modelNum + ".keras")
+    if not loadModel:
+        with open('modelVersion.txt', 'w') as f:
+            f.write(modelNum)
+            f.close()
