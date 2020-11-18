@@ -60,24 +60,35 @@ try:
         # Defining the model
         start_filter = 64
         INPUT_SHAPE = (window_size, 120, 160, 3)
-        model2 = Sequential()
-        model2.add(Conv3D(start_filter, (3, 3, 3), padding="same", input_shape=INPUT_SHAPE))
-        model2.add(MaxPool3D(pool_size=(1, 2, 2), strides=(1, 2, 2)))
-        model2.add(Conv3D(2*start_filter, (3, 3, 3), padding="same"))
-        model2.add(MaxPool3D(pool_size=(2, 2, 2), strides=(1, 2, 2)))
-        model2.add(Conv3D(4*start_filter, (3, 3, 3), padding="same"))
-        model2.add(Conv3D(4*start_filter, (3, 3, 3), padding="same"))
-        model2.add(Conv3D(4*start_filter, (3, 3, 3), padding="same"))
-        model2.add(MaxPool3D(pool_size=(2, 2, 2), strides=(1, 2, 2)))
-        model2.add(Conv3D(8*start_filter, (3, 3, 3), padding="same"))
-        model2.add(Conv3D(8*start_filter, (3, 3, 3), padding="same"))
-        model2.add(Conv3D(8*start_filter, (3, 3, 3), padding="same"))
-        model2.add(MaxPool3D(pool_size=(2, 2, 2), strides=(2, 2, 2)))
-        model2.add(Flatten())
-        model2.add(Dense(1024, activation="relu"))
-        model2.add(Dense(1024, activation="relu"))
-        model2.add(Dense(1, activation="relu"))
-        model2.compile(optimizer="adam", loss="MAE", metrics=["mae", "mse", "mape"])
+        model = Sequential()
+        model.add(Conv3D(start_filter, (3, 3, 3), padding="same", input_shape=INPUT_SHAPE))
+        model.add(MaxPool3D(pool_size=(1, 2, 2), strides=(1, 2, 2)))
+        model.add(Conv3D(2*start_filter, (3, 3, 3), padding="same"))
+        model.add(MaxPool3D(pool_size=(2, 2, 2), strides=(1, 2, 2)))
+        model.add(Conv3D(4*start_filter, (3, 3, 3), padding="same"))
+        model.add(Conv3D(4*start_filter, (3, 3, 3), padding="same"))
+        model.add(MaxPool3D(pool_size=(2, 2, 2), strides=(1, 2, 2)))
+        model.add(Conv3D(8*start_filter, (3, 3, 3), padding="same"))
+        model.add(Conv3D(8*start_filter, (3, 3, 3), padding="same"))
+        model.add(MaxPool3D(pool_size=(2, 2, 2), strides=(1, 2, 2)))
+        model.add(Conv3D(8 * start_filter, (3, 3, 3), padding="same"))
+        model.add(Conv3D(8 * start_filter, (3, 3, 3), padding="same"))
+        model.add(MaxPool3D(pool_size=(2, 2, 2), strides=(2, 2, 2)))
+        model.add(Flatten())
+        model.add(Dense(4096, activation="relu"))
+        model.add(Dense(4096, activation="relu"))
+        model.add(Dense(1, activation="relu"))
+        #optimizer = keras.optimizers.Adam(lr=0.0001)
+        model.compile(optimizer="adam", loss="MAE", metrics=["mae", "mse", "mape"])
+        keras.backend.set_value(model.optimizer.learning_rate, 0.0001)
+
+    # Log training outputs
+    log_file = "model" + modelNum + ".log"
+    print("Logging to: ", log_file)
+    if not loadModel:
+        csv_logger = CSVLogger(log_file, separator=',', append=True)
+    else:
+        csv_logger = CSVLogger(log_file, separator=',', append=False)
 
     # Training the model
     model.fit(asarray(x_train), asarray(y_train), epochs=5, batch_size=1, verbose=1, validation_split=.2, shuffle=True, callbacks=[csv_logger])
