@@ -3,7 +3,6 @@ from sklearn.model_selection import train_test_split
 from PIL import Image
 from numpy import asarray
 import cv2
-import glob
 import os
 
 
@@ -88,4 +87,8 @@ modelNum = "4"
 model = keras.models.load_model("model" + modelNum + ".keras")
 print(model.summary())
 
-test_sample(0)
+if __name__ == "__main__":
+    sample = int(input("Enter a sample to test: "))
+    while sample != -1:
+        test_sample(sample)
+        sample = int(input("Enter a sample to test: "))
