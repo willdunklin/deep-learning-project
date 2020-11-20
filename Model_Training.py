@@ -38,9 +38,11 @@ with open("train.txt") as f:
 
 
 data = []
-folder = "frames"
-for picture in os.listdir(folder): # Some_images only contains 64 images, for testing
-    data.append(asarray(Image.open(folder + "/" + picture)))
+folder = "Some_images"
+for i in range(len(os.listdir(folder))):
+    filename = "frame" + str(i) + ".jpg"
+    print(filename)
+    data.append(asarray(Image.open(os.path.join(os.getcwd(),folder,filename))))
 
 combined_data = []
 for i in range(len(data) - window_size): # Looping through all but the last window_size images to combine into one array
