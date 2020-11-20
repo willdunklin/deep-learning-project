@@ -2,6 +2,7 @@ from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from PIL import Image
 from numpy import asarray
+import numpy as np
 import cv2
 import os
 
@@ -16,9 +17,12 @@ def test_sample(x):
         out.write(frame)
     out.release()
 
-    prediction = model.predict(x_train[x])
+    prediction = model.predict(np.reshape(x_train[x], (1,8,120,160,3)).astype("float32"))
 
+    title = f"The predicted speed is {prediction[0][0]} mph"
     # Create a VideoCapture object and read from input file
+    cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+    cv2.resizeWindow(title, 400, 300)
     cap = cv2.VideoCapture('sample.mp4')
 
     # Check if camera opened successfully
@@ -33,7 +37,7 @@ def test_sample(x):
         if ret:
 
             # Display the resulting frame
-            cv2.imshow(f"The predicted speed is {prediction} mph", frame)
+            cv2.imshow(title, frame)
 
             # Press Q on keyboard to  exit
             if cv2.waitKey(50) & 0xFF == ord('q'):
